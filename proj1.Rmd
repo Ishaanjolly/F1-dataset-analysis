@@ -1,0 +1,207 @@
+---
+title: "Statisitcal Programming - 2020 - Project 1"
+output: rmarkdown::html_document
+author: Ishaan Singh Jolly
+---
+
+Due on Monday, November 2nd by 5:00 pm (17:00), UK local time.
+
+Before you start be sure to read through *all* of the rules and instructions in the `README.md`.
+
+<br/>
+
+### Data
+
+```{r,message = FALSE}
+library(tidyverse)
+library(kableExtra)
+library(gganimate)
+library(gifski)
+f1 = readRDS(file="data/f1.rds")
+```
+
+
+<br/>
+
+### Task 1 - Tidy the data
+
+#### Write up
+
+<!-- Include write up here -->
+The structure of the f1 data is a hierarchical structure with the first(top) list being all of the MRData. Then as we go further down the structure we reach the elements which make up the MRData, and further again we reach the sub-elements of those elements. Our aim is to get race_name, round,date, driver, constructor,position,points as our columns. So in each extraction/pull we seek to get the columns. Using hoist we extract each level our data, starting with level 1 we pull MRData, and from MRData we pull total and Racetable at level 2. At level 3, we use hoist again to pull Races and season. Since Races is listed, we use unnest_longer to turn each element of list column into row. Followed by that, we use hoist again to pull round, raceName, circuit, date and results from Races. We move to level 5.1 to pull CircuitName from Circuit. Following to that,we need to make Result in lists, unnested to each each. We move to level 5.2 to extract positionText, driver, constructor and points from Results. Further more, we move to two of our final level 6.2.1 to extract givenName, familyName and nationality of the driver. Finally, we move to level 6.2.2 to get our final extraction of name(of constructor) from Constructor.
+
+Since, we need to render a very specific dataframe, with names listed as driver, constructor, race_name and position. We change the names of the data frame by making the same dataframe using a different name. 
+
+Next, we need to change class of certain columns such as round, position, points into integer, and Date into a date class. In order to not induce the warnings brought out by the coercion, we convert the non numeric values of position to NA before we convert its class to an integer. 
+
+Finally, we select columns we week seek : race_name, round, date, driver, constructor, position, points, and use slice to select only 10 rows. 
+
+
+#### Code
+
+```{r task1}
+f1_tidy = tibble(all_data = f1) %>% 
+  hoist(all_data,                         #level 1 pulling of MRData
+        MRData = "MRData",
+        )%>%
+  hoist(MRData,                           #level 2 pulling of total and RaceTable from MRData 
+        total = "total",
+        RaceTable ="RaceTable")%>%
+  hoist(RaceTable,                        #level 3 extraction of season, Races from RaceTable 
+        season = "season",
+        Races = "Races") %>%
+  tidyr::unnest_longer(Races)%>%          #unnest each race to f1 level 
+  hoist(Races, 
+        round = "round",           #level 4 extraction of round, raceName, ciruit, date and results from Races
+        raceName = "raceName",
+        Circuit = "Circuit",
+        date = "date",
+        Results = "Results" )%>%
+  hoist(Circuit, 
+        circuitName = "circuitName")%>%    #level 5.1  extraction of circuit name from circuit 
+  tidyr::unnest_longer(Results)%>%         #unnest each result to f1 level 
+  hoist(Results,                           #level 5.2 extraction of positiontext, driver, constructor, and points from Results 
+        positionText = "positionText",
+        Driver = "Driver",
+        Constructor = "Constructor",
+        points = "points") %>%
+  hoist(Driver,                           #level 6.2.1 extraction of givenName, familyName and nationality 
+        givenName = "givenName",
+        familyName = "familyName",
+        nationality = "nationality")%>%
+  hoist(Constructor,                      #level 6.2.2 extraction of name(of constructor) from constructor 
+        name = "name") %>%
+  mutate(points = as.numeric(points))     #convert character points to numeric points 
+
+
+#Modifications to render the desired data frame
+
+f1_tidy$driver <- paste(f1_tidy$givenName, f1_tidy$familyName, sep = " ")
+f1_tidy$constructor <- f1_tidy$name
+f1_tidy$race_name <- f1_tidy$raceName
+f1_tidy$position <- f1_tidy$positionText
+
+#Convert certain position values into NA so coercion does not induce an error when we convert to integer 
+f1_tidy <- f1_tidy %>% mutate(position = replace(position, position %in% c('R', 'D'), NA)) 
+
+#Convert round, position, points to integer from character and date to date class. 
+f1_tidy %>% select(race_name, round, date, driver, constructor, position, points) %>% mutate(round = as.integer(round),position = as.integer(position),points = as.integer(points),date = as.Date(date))%>%slice_head(n=10)
+
+```
+
+<br/>
+
+
+### Task 2 - Drivers' Championship
+
+#### Write up
+
+<!-- Include write up here -->
+For task 2, we need to create a table with the finish position of each race and over total points for 20 drivers. Our aim is to create a table, so we start by creating a data frame. We need exactly 3 columnns: driver name, race name(with every race name showing the position of the driver) and sum of all points earned by the driver in total. We start by converting the position certain non integer values in position to NA and then using coercison to convert position into integer. Since we need the race names to be in a chronological order, we arrange by driver and date. Following this we use summarize to sum up points as  and arrange in the decreasing order of points. Then we use pivot_wider to get the finish position. Finally to print out a nicely formatted version of the completed table with driver names, race names and total points as are columns, we use kable function from the kableExtra package.  
+
+#### Code
+
+```{r task2}
+#Convert the certain position values: R and D to NA to avoid warning induced due to coercsion 
+f1_tidy <- f1_tidy %>% mutate(position = replace(position, position %in% c('R', 'D'), NA))
+f1_tidy %>%mutate(position = as.integer(position))%>%
+  arrange(driver, date) %>%                                      #arrange using driver and dates since we are interested in a chronological results
+  group_by(driver) %>%                   
+  summarise(points = sum(points),                                #get sum of points, position and race_name in list format 
+            position = list(position), 
+            race_name = list(race_name),.groups ="drop") %>%
+  unnest(c(position, race_name)) %>%                             #unnest position and race_name 
+  arrange(desc(points)) %>%                                      # arrange total points in descending order 
+  pivot_wider(names_from = race_name, values_from = position) %>% #make race_names columns and each position value as rows
+  select(driver, ends_with('Prix'), points) -> q2                 #select the driver column and other race_names,total points 
+kable(q2)
+```
+
+<br/>
+
+### Task 3 - Cumulative Constructors
+
+#### Write up
+
+<!-- Include write up here -->
+For task 3, we need to provide a table with cumulative points for each game,for each constructor. Our objective is to have a table with 22 columns, including constructor name, names of races. We first mutate, race name to factors and group the data frame on basis of constructor name and race name. We summarise to create a new variable to find total(sum) of points. We use mutate to find the cumulative sum of points. Finally, we use pivot_wider to get the cumulative points for each race. Finally to print out a nicely formatted version of the completed table with constructor names, race names(with cumulative points for each driver according to the race), we use kable function from the kableExtra package.
+
+#### Code
+
+```{r task3}
+q3 <- f1_tidy %>%
+        mutate(raceName = factor(raceName, unique(raceName)))%>%    # convert the raceName to factor, we only want unique raceNames  
+        group_by(name, raceName) %>%                                # group the df on basis of constructor name and raceName 
+        summarise(points = sum(points),.groups = "drop_last") %>%   #summarise by finding total points, and drop the last level of grouping 
+        mutate(points = cumsum(points)) %>%                         #create a new variable, points which calculates cumulative sums 
+        pivot_wider(names_from = raceName, values_from = points)    #make a columns using raceNames and take values from points 
+kable(q3)    
+
+  
+```
+
+<br/>
+
+### Task 4 - Visualization
+
+#### Write up
+
+<!-- Include write up here -->
+For task 4, we use bar plots to determine which constructor has delivered maximum total points in the entire F1 season Using the ggplot, we see a lopsided results, certain constructors such as Redbull, Ferrari and Mercedes only scored about >400 whilst the other constructors did not make an effort to increase their points. 
+
+In order to see, how drivers played over the season. We use a bar graph to determine which driver has delivered maximum total points in the entire F1 season. As expected since the constructors performance was lopsided, the driver performance was lopsided too. With Charles Leclerc, Lewis Hamilton, Max Verstappen and Sebastian Vettel dominating the race scoring >= 100 points. Lewis Hamilton naturally took the season by scoring >400 points. It can also be seen that other drivers, scored <= 100 points did not make considerable effort to compete with other drivers. 
+
+Inspiration for the writeup: https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&ved=2ahUKEwjkheDC2OPsAhWOXSsKHUfEB04QFjAAegQIARAC&url=http%3A%2F%2Fsamples.leanpub.com%2Fwranglingf1datawithr-sample.pdf&usg=AOvVaw1X1mAvCv8Tn-bDP3GhS35T
+Referenced chapter: Point Performance Chart 
+
+We make another (animated) distribution to see how constructors accumulated over different rounds in the game. Illustrating how the constructors performed in each round using cumulative points. As the number of rounds increase we see that Mercedes, Ferrari and Redbull start to dominate the race as also visible in plot 1. The colored lines show us the performance of a constructor, with the dotted gray line telling us the name of the constructor. The legends on the right side tell us about which constructor corresponds to which color. 
+
+
+#### Code
+
+```{r task4}
+
+#1st plot 
+p1 <- f1_tidy %>%
+  group_by(constructor) %>%
+  summarise(points = sum(points),.groups ="drop_last") %>%            #use summarise to get total points scored by each constructor 
+  ggplot() + aes(constructor, points) + geom_col() +                  #constructor on x axis and points on y axis
+  ggtitle('Constructor wise performance')
+
+p1
+
+#2nd plot
+
+p2 <- f1_tidy %>%
+  group_by(driver) %>%
+  summarise(points = sum(points),.groups ="drop_last") %>%         #use summarise to get total points scored by each driver 
+  ggplot() + aes(driver, points) + geom_col() +                    #driver on x axis and points on y axis 
+  ggtitle('Driver wise performance') + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+p2
+
+#3rd plot 
+        f1_tidy%>%
+        mutate(round = factor(round, unique(round)))%>%            #convert round to a factor and take only unique values 
+        group_by(name,round)%>%                                    #group on basis of name and round
+        summarise(points = sum(points),.groups ="drop_last") %>%   #summarise to get total points 
+        mutate(points = cumsum(points))%>%                         #use cumsum to get the cumulative sums of points according to the round 
+        mutate(round = as.integer(round))%>%                       #convert the class of round to integer 
+          select(round, points, name) -> p3                       #make selections of round, points and name 
+ggplot(data = p3,mapping = aes(x = round, y = points, group = name))+  #define x axis as round, y axis as points and group according to the constructor name 
+        geom_line(mapping = aes(color = name), alpha = 0.7) +           #make a line plot with color set according to constructor name 
+        geom_segment(aes(xend = 21, yend=points), linetype = 2, color = "grey")+ #create a dotted line segment 
+        geom_point(size = 0.5,alpha = 0.5)+                              #create a point on the tip of the line showing cumulative sum of constructor scores per round
+        geom_text(aes(x=21.1,label = name),size = 2)+                    #label according to the name of constructor 
+        gganimate::transition_reveal(round)+                              #create animation with transition reveal according to the rounds in the game 
+        labs(title = "Constructor's Standing",                            # create title, yaxis label and color label
+             y = "Constructor Points",
+             color = "Constructor")+
+        coord_cartesian(clip = "off")                                   #zoom the plot using coord_cartesian
+
+
+```
+
+<br/>
+
