@@ -1,5 +1,5 @@
 
-#F1 data set analysis 
+# F1 data set analysis 
 
 This project was made as part of the statistical programming coursework, and involved analysing the F1 dataset. 
 
