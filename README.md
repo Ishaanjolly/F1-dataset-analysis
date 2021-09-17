@@ -1,5 +1,5 @@
-[![Check Allowed Files](https://github.com/statprog-s1-2020/proj1_ishaanjolly/workflows/Check%20Allowed%20Files/badge.svg)](https://github.com/statprog-s1-2020/proj1_ishaanjolly/actions?query=workflow:%22Check%20Allowed%20Files%22) [![Check RMarkdown Renders](https://github.com/statprog-s1-2020/proj1_ishaanjolly/workflows/Check%20RMarkdown%20Renders/badge.svg)](https://github.com/statprog-s1-2020/proj1_ishaanjolly/actions?query=workflow:%22Check%20RMarkdown%20Renders%22) [![Check Rmd Structure](https://github.com/statprog-s1-2020/proj1_ishaanjolly/workflows/Check%20Rmd%20Structure/badge.svg)](https://github.com/statprog-s1-2020/proj1_ishaanjolly/actions?query=workflow:%22Check%20Rmd%20Structure%22)
 
+#F1 data set analysis 
 
 This project was made as part of the statistical programming coursework, and involved analysing the F1 dataset. 
 
