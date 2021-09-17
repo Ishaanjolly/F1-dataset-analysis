@@ -1,39 +1,7 @@
 [![Check Allowed Files](https://github.com/statprog-s1-2020/proj1_ishaanjolly/workflows/Check%20Allowed%20Files/badge.svg)](https://github.com/statprog-s1-2020/proj1_ishaanjolly/actions?query=workflow:%22Check%20Allowed%20Files%22) [![Check RMarkdown Renders](https://github.com/statprog-s1-2020/proj1_ishaanjolly/workflows/Check%20RMarkdown%20Renders/badge.svg)](https://github.com/statprog-s1-2020/proj1_ishaanjolly/actions?query=workflow:%22Check%20RMarkdown%20Renders%22) [![Check Rmd Structure](https://github.com/statprog-s1-2020/proj1_ishaanjolly/workflows/Check%20Rmd%20Structure/badge.svg)](https://github.com/statprog-s1-2020/proj1_ishaanjolly/actions?query=workflow:%22Check%20Rmd%20Structure%22)
 
 
-Statisitcal Programming - 2020 - Project 1
------------
-
-Due Monday, November 2nd by 5:00 pm (17:00) UK local time.
-
-## Rules
-
-1. Your solutions must be written up using the provided R Markdown file (`proj1.Rmd)`, this file must include your code and write up for each task.
-
-2. This project is open book, open internet, closed other people. You may use *any* online or book based resource you would like, but you must include citations for any code that you use (directly or indirectly). You *may not* consult with anyone else about this exam other than the Lecturers or Tutors for this course - this includes posting anything online. You may post questions on Piazza, general questions are fine and can be posted publicly - any question containing code should be posted privately.
-
-3. If you receive help *or* provide help to any other student in this course you will receive 0 marks for this assignment. Do not share your code with anyone else in this course.
-
-4. You have until Monday, November 2nd by 5:00 pm (17:00) UK local time to complete this project and turn it in via your personal Github repo - late work will be subject to the standard university late policy. Technical difficulties are not an excuse for late work - do not wait until the last minute to commit / push.
-
-5. All of your answers *must* include a brief description / write up of your approach. This includes both annotating / commenting your code *and* a separate written descriptions of all code / implementations. I should be able to suppress *all* code output in your document and still be able to read and make sense of your answers.
-
-6. You may use any packages you like from *CRAN*, however all tasks can be accomplished using the packages provided by default in RStudio Cloud.
-
-7. Your first goal is to write code that can accomplish all of the given tasks,  however keep in mind that marking will also be based on the quality of the code you write - elegant, efficient code will be given better marks and messy, slow code will be penalized.
-
-<br />
-
-## Data
-
-For this exam you will be working with a data from the 2019 Formula 1 racing season. The data was downloaded from ergast.com in the form of several JSON files which contain information on the results of all 21 races from the 2019 season. These data were read into R using the `jsonlite` packages and your repo contains the resulting R object saved as `f1.rds` in the `data` directory. This file can be loaded into your R session using
-```r
-f1 = readRDS(file="data/f1.rds")
-```
-
-The data is structured as a list of lists of lists of lists and so on, it is up to you to look at the data and figure out how it is structured and how best to get at the information you need.
-
-<br />
+This project was made as part of the statistical programming coursework, and involved analysing the F1 dataset. 
 
 ## Task 1 - Tidy the data
 
